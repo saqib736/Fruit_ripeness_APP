@@ -125,14 +125,28 @@ class MainView(tk.Frame):
         self.results_frame = ttk.Frame(self.right_frame, style="Card.TFrame")
         self.results_frame.pack(fill="both", expand=True, pady=(0, 20))
         
+        # Create a styled result frame
+        self.result_box = ttk.Frame(
+            self.results_frame,
+            style="Card.TFrame",
+            padding=15
+        )
+        self.result_box.pack(fill="x", pady=10)
+        
+        # Result label with better styling
         self.result_label = ttk.Label(
-            self.results_frame, 
+            self.result_box, 
             text="No analysis performed yet",
             background=ThemeManager.COLORS["card"],
             foreground=ThemeManager.COLORS["text_secondary"],
-            padding=15
+            font=("Helvetica", 16, "bold"),
+            padding=10
         )
-        self.result_label.pack(pady=20)
+        self.result_label.pack(expand=True, fill="both")
+        
+        # Configure the result_box to center its content
+        self.result_box.columnconfigure(0, weight=1)
+        self.result_box.rowconfigure(0, weight=1)
         
         # Buttons container
         self.buttons_container = ttk.Frame(self.right_frame, style="Card.TFrame")
@@ -260,10 +274,29 @@ class MainView(tk.Frame):
         
         try:
             # Save and analyze the image
-            saved_path, result = self.controller.save_and_analyze_image(self.current_image_path)
+            saved_path, result, analysis_details = self.controller.save_and_analyze_image(self.current_image_path)
             
-            # Update the result label with styled text
-            self.result_label.config(text=f"Result: {result}")
+            # Extract fruit name and condition from analysis_details if available
+            fruit_name = "Fruit"  # Default value
+            if analysis_details:
+                # Try to extract the fruit name from the analysis
+                lower_analysis = analysis_details.lower()
+                common_fruits = ["apple", "banana", "orange", "strawberry", "mango", "pear", "grape", "pineapple", "kiwi", "avocado", "watermelon", "peach", "plum", "cherry", "lemon", "lime", "blueberry", "raspberry"]
+                
+                for fruit in common_fruits:
+                    if fruit in lower_analysis:
+                        fruit_name = fruit.capitalize()
+                        break
+            
+            # Update the result label with styled text including fruit name
+            self.result_label.config(text=f"{fruit_name}: {result}", anchor="center", justify="center")
+            
+            # We'll hide the detailed analysis as requested
+            # If we previously had an analysis frame, hide it
+            if hasattr(self, 'analysis_frame'):
+                self.analysis_frame.pack_forget()
+            if hasattr(self, 'analysis_title'):
+                self.analysis_title.pack_forget()
             
             # Change the color based on the result
             if result == "Ripe":
@@ -273,7 +306,7 @@ class MainView(tk.Frame):
             elif result == "Overripe":
                 self.result_label.config(foreground=ThemeManager.COLORS["error"], font=("Helvetica", 12, "bold"))
             
-            messagebox.showinfo("Analysis Complete", f"The fruit is {result}")
+            messagebox.showinfo("Analysis Complete", f"The {fruit_name.lower()} is {result.lower()}")
         except Exception as e:
             messagebox.showerror("Error", f"Error analyzing image: {e}")
     
@@ -286,6 +319,84 @@ class MainView(tk.Frame):
             admin_view = AdminView(self)
         except Exception as e:
             messagebox.showerror("Error", f"Error showing admin panel: {e}")
+    
+    def show_analysis_details(self, result, analysis_details):
+        """
+        Display detailed analysis from the Gemini API in a new window
+        
+        Args:
+            result (str): The ripeness classification result
+            analysis_details (str): The detailed analysis from the Gemini API
+        """
+        # Create a new top-level window
+        details_window = tk.Toplevel(self)
+        details_window.title(f"Detailed Analysis - {result}")
+        details_window.geometry("600x500")
+        details_window.configure(background=ThemeManager.COLORS["background"])
+        
+        # Create a frame for the content
+        content_frame = ThemeManager.create_card_frame(details_window)
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # Add a title
+        title_label = ThemeManager.create_header_label(
+            content_frame, 
+            text=f"AI Analysis Result: {result}",
+            background=ThemeManager.COLORS["card"]
+        )
+        title_label.pack(pady=(10, 20), anchor="w")
+        
+        # Add a subtitle
+        subtitle_label = ThemeManager.create_subheader_label(
+            content_frame,
+            text="Powered by Google Gemini AI",
+            background=ThemeManager.COLORS["card"],
+            foreground=ThemeManager.COLORS["text_secondary"]
+        )
+        subtitle_label.pack(pady=(0, 20), anchor="w")
+        
+        # Create a frame for the analysis text with scrollbars
+        text_frame = ttk.Frame(content_frame)
+        text_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Add scrollbars
+        scrollbar_y = ttk.Scrollbar(text_frame, orient="vertical")
+        scrollbar_y.pack(side="right", fill="y")
+        
+        scrollbar_x = ttk.Scrollbar(text_frame, orient="horizontal")
+        scrollbar_x.pack(side="bottom", fill="x")
+        
+        # Add a text widget for the analysis
+        analysis_text = tk.Text(
+            text_frame,
+            wrap="word",
+            bg=ThemeManager.COLORS["card_secondary"],
+            fg=ThemeManager.COLORS["text"],
+            font=("Helvetica", 10),
+            padx=10,
+            pady=10,
+            height=15,
+            width=70
+        )
+        analysis_text.pack(fill="both", expand=True)
+        
+        # Connect the scrollbars
+        analysis_text.config(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
+        scrollbar_y.config(command=analysis_text.yview)
+        scrollbar_x.config(command=analysis_text.xview)
+        
+        # Insert the analysis text
+        analysis_text.insert("1.0", analysis_details)
+        analysis_text.config(state="disabled")  # Make it read-only
+        
+        # Add a close button
+        close_button = ThemeManager.create_rounded_button(
+            details_window,
+            text="Close",
+            command=details_window.destroy,
+            bg_color=ThemeManager.COLORS["primary"]
+        )
+        close_button.pack(pady=15)
     
     def show_history(self):
         """

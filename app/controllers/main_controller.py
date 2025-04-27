@@ -77,16 +77,18 @@ class MainController:
             image_path (str): The path to the image file
             
         Returns:
-            tuple: (saved_path, result) where saved_path is the path where the image was saved
-                  and result is the ripeness classification result
+            tuple: (saved_path, result, analysis_details) where:
+                  - saved_path is the path where the image was saved
+                  - result is the ripeness classification result
+                  - analysis_details is the detailed analysis from the AI (if available)
         """
         if not self.current_user_id:
             raise ValueError("User is not logged in")
         
         saved_path = self.image_controller.save_image(image_path)
-        result = self.image_controller.analyze_image(saved_path)
+        result, analysis_details = self.image_controller.analyze_image(saved_path)
         
-        return saved_path, result
+        return saved_path, result, analysis_details
     
     def get_user_images(self):
         """

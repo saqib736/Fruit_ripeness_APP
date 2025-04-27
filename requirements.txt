@@ -11,4 +11,9 @@ opencv-python>=4.7.0  # For computer vision tasks
 matplotlib>=3.7.0  # For plotting and visualization
 pandas>=2.0.0  # For data manipulation and analysis
 
+# AI and API dependencies
+google-generativeai>=0.3.0  # Google Gemini API client
+python-dotenv>=1.0.0  # For loading environment variables
 
+# Machine learning dependencies
+google-genai

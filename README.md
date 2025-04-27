@@ -1,14 +1,16 @@
 # Fruit Ripeness Detection Application
 
-A simple desktop application for fruit ripeness detection built with Python and Tkinter.
+A desktop application for fruit ripeness detection built with Python, Tkinter, and Google Gemini AI.
 
 ## Features
 
 - User Management (Registration and Login)
 - Image Upload and Display
-- Basic Fruit Ripeness Analysis (currently a placeholder)
+- AI-Powered Fruit Ripeness Analysis using Google Gemini API
+- Automatic Fruit Type Detection
 - Image History Tracking
 - SQLite Database for Data Storage
+- Modern UI with Responsive Design
 
 ## Project Structure
 
@@ -81,21 +83,47 @@ sudo apt-get install python3-tk
 sudo apt-get install python3-pil.imagetk
 ```
 
+## API Configuration
+
+This application uses the Google Gemini API for fruit ripeness detection. You need to set up an API key to use this feature:
+
+1. Get a Google Gemini API key from [Google AI Studio](https://ai.google.dev/)
+2. Create a `.env` file in the project root directory
+3. Add your API key to the `.env` file:
+
+```
+GEMINI_API_KEY=your_api_key_here
+```
+
+If you don't have an API key, the application will fall back to random selection for ripeness detection.
+
 ## Usage
 
-Run the application using:
+1. Run the application:
 
 ```bash
 python main.py
 ```
 
+2. Register a new account or log in with an existing account
+3. Upload a fruit image using the 'Upload Image' button
+4. Click 'Analyze Image' to detect the fruit type and ripeness level
+5. View your analysis history with the 'View History' button
+
+## Admin Access
+
+To access the admin panel:
+1. Register with the username 'admin'
+2. The admin panel button will appear on the main screen after login
+
 ## Future Enhancements
 
-- Integration with an actual AI model for fruit ripeness detection
-- Advanced image preprocessing
-- More detailed analysis results
-- User profile management
-- Export functionality for analysis results
+- Support for more fruit types and conditions
+- Advanced image preprocessing for better analysis
+- Offline analysis mode with local ML models
+- User profile management and preferences
+- Export functionality for analysis results and reports
+- Mobile application version
 
 ## Dependencies
 
@@ -104,6 +132,8 @@ python main.py
 - Pillow (PIL) for image processing
 - OpenCV for computer vision tasks
 - NumPy for numerical operations
+- Google Generative AI library for Gemini API integration
+- python-dotenv for environment variable management
 - Matplotlib for visualization
 - Pandas for data manipulation
 - SQLite for database operations

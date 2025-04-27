@@ -55,27 +55,47 @@ class ImageController:
     
     def analyze_image(self, image_path):
         """
-        Analyze the image to determine fruit ripeness
-        This is a placeholder function that returns a random result
+        Analyze the image to determine fruit ripeness using Google Gemini API
         
         Args:
             image_path (str): The path to the image file
             
         Returns:
             str: The ripeness classification result
+            dict: Additional analysis details (if available)
         """
-        # Placeholder function - in a real application, this would use an AI model
-        # to analyze the image and determine the ripeness of the fruit
-        
-        # For now, just return a random result
-        results = ["Ripe", "Unripe", "Overripe"]
-        result = random.choice(results)
-        
-        # Save the result to the database
-        if self.user_id:
-            self.db.save_image_data(self.user_id, image_path, result)
-        
-        return result
+        try:
+            # Import the Gemini API utility
+            from utils.gemini_api import analyze_fruit_image
+            
+            # Use Gemini API to analyze the image
+            analysis_result = analyze_fruit_image(image_path)
+            
+            # Get the ripeness classification
+            result = analysis_result.get('ripeness', 'Unknown')
+            
+            # Fallback to random selection if API fails
+            if result == 'Unknown':
+                print("Gemini API analysis failed, falling back to random selection")
+                results = ["Ripe", "Unripe", "Overripe"]
+                result = random.choice(results)
+            
+            # Save the result to the database
+            if self.user_id:
+                self.db.save_image_data(self.user_id, image_path, result)
+            
+            return result, analysis_result.get('full_analysis', None)
+        except Exception as e:
+            print(f"Error in analyze_image: {e}")
+            # Fallback to random selection if anything goes wrong
+            results = ["Ripe", "Unripe", "Overripe"]
+            result = random.choice(results)
+            
+            # Save the result to the database
+            if self.user_id:
+                self.db.save_image_data(self.user_id, image_path, result)
+            
+            return result, None
     
     def get_user_images(self):
         """
